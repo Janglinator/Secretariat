@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using System.Collections.Generic;
 
 namespace Secretariat
 {
@@ -12,7 +11,7 @@ namespace Secretariat
     public class ModEntry : Mod
     {
         private ModConfig _config;
-        private Dictionary<long, int> _buffByPlayerId = new Dictionary<long, int>();
+        private int _addedSpeed = 0;
 
         /*********
         ** Public methods
@@ -43,40 +42,24 @@ namespace Secretariat
 
         private void UpdateAddedSpeed()
         {
-            if (!Game1.IsMasterGame) { return; }
+            int existingBuff = 0;
 
-            foreach (var player in Game1.getAllFarmers())
+            if (Game1.player.addedSpeed > _addedSpeed)
             {
-                int existingBuff = 0;
-                int addedSpeed = 0;
-                _buffByPlayerId.TryGetValue(player.UniqueMultiplayerID, out addedSpeed);
-
-                if (player.addedSpeed > addedSpeed)
-                {
-                    // There's an existing buff
-                    existingBuff = player.addedSpeed - addedSpeed;
-                }
-
-                if (player.mount != null && addedSpeed == 0)
-                {
-                    addedSpeed = _config.SpeedBoost;
-                }
-                else if (player.mount == null && addedSpeed != 0)
-                {
-                    addedSpeed = 0;
-                }
-
-                _buffByPlayerId[player.UniqueMultiplayerID] = addedSpeed;
-                player.addedSpeed = addedSpeed + existingBuff;
+                // There's an existing buff
+                existingBuff = Game1.player.addedSpeed - _addedSpeed;
             }
-        }
 
-        private void log(string message, LogLevel level = LogLevel.Debug)
-        {
-#if DEBUG
-            Monitor.Log(message, level);
-#endif
+            if (Game1.player.mount != null && _addedSpeed == 0)
+            {
+                _addedSpeed = _config.SpeedBoost;
+            }
+            else if (Game1.player.mount == null && _addedSpeed != 0)
+            {
+                _addedSpeed = 0;
+            }
+
+            Game1.player.addedSpeed = _addedSpeed + existingBuff;
         }
     }
 }
-
