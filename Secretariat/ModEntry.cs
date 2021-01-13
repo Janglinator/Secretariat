@@ -34,7 +34,7 @@ namespace Secretariat
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             if (!Context.IsPlayerFree || !Context.IsWorldReady || Game1.paused
-                || Game1.activeClickableMenu != null || !Context.IsMainPlayer)
+                || Game1.activeClickableMenu != null)
                 return;
 
             UpdateAddedSpeed();
