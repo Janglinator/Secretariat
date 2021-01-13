@@ -3,6 +3,6 @@ namespace Secretariat
 {
     public class ModConfig
     {
-        public int SpeedBoost { get; set; } = 5;
+        public int SpeedBoost { get; set; } = 2;
     }
 }
