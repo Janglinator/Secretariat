@@ -12,7 +12,6 @@ namespace Secretariat
     public class ModEntry : Mod
     {
         private ModConfig _config;
-        //private int _addedSpeed = 0;
         private Dictionary<long, int> _buffByPlayerId = new Dictionary<long, int>();
 
         /*********
@@ -48,19 +47,14 @@ namespace Secretariat
 
             foreach (var player in Game1.getAllFarmers())
             {
-                log("player: " + player.UniqueMultiplayerID);
-
                 int existingBuff = 0;
-                int addedSpeed;
+                int addedSpeed = 0;
                 _buffByPlayerId.TryGetValue(player.UniqueMultiplayerID, out addedSpeed);
-
-                log("oldAddedSpeed: " + addedSpeed);
 
                 if (player.addedSpeed > addedSpeed)
                 {
                     // There's an existing buff
                     existingBuff = player.addedSpeed - addedSpeed;
-                    log("existingBuff: " + existingBuff);
                 }
 
                 if (player.mount != null && addedSpeed == 0)
@@ -71,8 +65,6 @@ namespace Secretariat
                 {
                     addedSpeed = 0;
                 }
-
-                log("newAddedSpeed: " + addedSpeed);
 
                 _buffByPlayerId[player.UniqueMultiplayerID] = addedSpeed;
                 player.addedSpeed = addedSpeed + existingBuff;
