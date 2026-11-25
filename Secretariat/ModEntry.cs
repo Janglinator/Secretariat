@@ -1,65 +1,43 @@
-using System;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Buffs;
 
-namespace Secretariat
+namespace Secretariat;
+
+public sealed class ModEntry : Mod
 {
-    /// <summary>The mod entry point.</summary>
-    public class ModEntry : Mod
+    private int speedBoost;
+
+    public override void Entry(IModHelper helper)
     {
-        private ModConfig _config;
-        private int _addedSpeed = 0;
+        this.speedBoost = helper.ReadConfig<ModConfig>().SpeedBoost;
+        helper.Events.GameLoop.UpdateTicking += this.OnUpdateTicking;
+    }
 
-        /*********
-        ** Public methods
-        *********/
-        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
-        public override void Entry(IModHelper helper)
+    private void OnUpdateTicking(object sender, UpdateTickingEventArgs e)
+    {
+        if (!Context.IsWorldReady)
+            return;
+
+        // SMAPI raises this event in each local screen's own player context.
+        Farmer rider = Game1.player;
+        string buffId = this.ModManifest.UniqueID;
+        bool shouldApply = this.speedBoost != 0 && rider.isRidingHorse();
+        if (rider.buffs.IsApplied(buffId) == shouldApply)
+            return;
+
+        if (shouldApply)
         {
-            _config = this.Helper.ReadConfig<ModConfig>();
-            helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            rider.applyBuff(new Buff(buffId, duration: Buff.ENDLESS,
+                effects: new BuffEffects { Speed = { Value = this.speedBoost } })
+            {
+                visible = false
+            });
         }
-
-
-        /*********
-        ** Private methods
-        *********/
-        /// <summary>Raised after the game state is updated (≈60 times per second).</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
-        private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
+        else
         {
-            if (!Context.IsPlayerFree || !Context.IsWorldReady || Game1.paused
-                || Game1.activeClickableMenu != null)
-                return;
-
-            UpdateAddedSpeed();
-        }
-
-        private void UpdateAddedSpeed()
-        {
-            int existingBuff = 0;
-
-            if (Game1.player.addedSpeed > _addedSpeed)
-            {
-                // There's an existing buff
-                existingBuff = Game1.player.addedSpeed - _addedSpeed;
-            }
-
-            if (Game1.player.mount != null && _addedSpeed == 0)
-            {
-                _addedSpeed = _config.SpeedBoost;
-            }
-            else if (Game1.player.mount == null && _addedSpeed != 0)
-            {
-                _addedSpeed = 0;
-            }
-
-            Game1.player.addedSpeed = _addedSpeed + existingBuff;
+            rider.buffs.Remove(buffId);
         }
     }
 }

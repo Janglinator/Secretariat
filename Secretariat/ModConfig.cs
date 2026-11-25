@@ -1,8 +1,6 @@
-﻿using System;
-namespace Secretariat
+namespace Secretariat;
+
+public sealed class ModConfig
 {
-    public class ModConfig
-    {
-        public int SpeedBoost { get; set; } = 3;
-    }
+    public int SpeedBoost { get; set; } = 3;
 }
